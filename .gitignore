@@ -1,0 +1,5 @@
+.env
+/logs/
+/vendor/
+/storage/uploads/tasklists/*
+!/storage/uploads/tasklists/.gitkeep

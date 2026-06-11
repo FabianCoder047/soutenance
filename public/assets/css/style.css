@@ -1,0 +1,482 @@
+/* Google Fonts Import */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700;800&display=swap');
+
+:root {
+    --font-primary: 'Outfit', 'Inter', sans-serif;
+    --font-secondary: 'Inter', sans-serif;
+
+    /* Theme colors - will be customized by body classes */
+    --primary-color: #1e293b;
+    --primary-hover: #0f172a;
+    --primary-light: #f1f5f9;
+    
+    --success-color: #10b981;
+    --warning-color: #f59e0b;
+    --danger-color: #ef4444;
+    --info-color: #3b82f6;
+    
+    --bg-light: #f8fafc;
+    --card-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Role-specific color adjustments overrides */
+body.role-admin {
+    --primary-color: #1e3a5f; /* Dark Blue */
+    --primary-hover: #12243d;
+    --primary-light: #eff4fc;
+}
+
+body.role-developer {
+    --primary-color: #2e6da4; /* Medium Blue */
+    --primary-hover: #1e4a71;
+    --primary-light: #eef5fa;
+}
+
+body.role-client {
+    --primary-color: #0d7a5f; /* Teal/Green */
+    --primary-hover: #084e3d;
+    --primary-light: #e6f5f1;
+}
+
+body {
+    font-family: var(--font-primary);
+    background-color: var(--bg-light);
+    color: #334155;
+    overflow-x: hidden;
+}
+
+/* Sidebar Styling */
+.sidebar {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 100;
+    width: 260px;
+    background-color: var(--primary-color);
+    color: #ffffff;
+    box-shadow: 4px 0 24px rgba(0, 0, 0, 0.05);
+    transition: var(--transition-smooth);
+    display: flex;
+    flex-direction: column;
+}
+
+.sidebar .brand {
+    padding: 24px 20px;
+    font-size: 1.3rem;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.sidebar-nav {
+    padding: 20px 14px;
+    flex-grow: 1;
+}
+
+.sidebar-nav .nav-link {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    color: rgba(255, 255, 255, 0.7);
+    padding: 12px 16px;
+    border-radius: 12px;
+    font-weight: 500;
+    transition: var(--transition-smooth);
+    margin-bottom: 6px;
+    text-decoration: none;
+}
+
+.sidebar-nav .nav-link:hover {
+    color: #ffffff;
+    background-color: rgba(255, 255, 255, 0.08);
+    transform: translateX(4px);
+}
+
+.sidebar-nav .nav-link.active {
+    color: #ffffff;
+    background-color: rgba(255, 255, 255, 0.15);
+    font-weight: 600;
+}
+
+.sidebar .sidebar-footer {
+    padding: 20px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Main Content Area */
+.main-wrapper {
+    margin-left: 260px;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    transition: var(--transition-smooth);
+}
+
+.top-navbar {
+    background-color: #ffffff;
+    border-bottom: 1px solid #e2e8f0;
+    padding: 16px 30px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.content-body {
+    padding: 30px;
+    flex-grow: 1;
+}
+
+/* Cards & Elements */
+.card-premium {
+    background-color: #ffffff;
+    border-radius: 16px;
+    border: 1px solid #f1f5f9;
+    box-shadow: var(--card-shadow);
+    transition: var(--transition-smooth);
+    overflow: hidden;
+}
+
+.card-premium:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 30px -10px rgba(0, 0, 0, 0.08);
+}
+
+.card-kpi {
+    padding: 24px;
+    border-radius: 16px;
+    color: #ffffff;
+    position: relative;
+    overflow: hidden;
+}
+
+.card-kpi::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -20%;
+    width: 150px;
+    height: 150px;
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 50%;
+}
+
+.card-kpi .kpi-val {
+    font-size: 2.5rem;
+    font-weight: 800;
+    line-height: 1;
+    margin-bottom: 4px;
+}
+
+.card-kpi .kpi-label {
+    font-size: 0.9rem;
+    font-weight: 500;
+    opacity: 0.85;
+}
+
+.card-kpi .kpi-icon {
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
+    font-size: 2.2rem;
+    opacity: 0.35;
+}
+
+/* Avatar Circle */
+.avatar-circle {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    background-color: var(--primary-light);
+    color: var(--primary-color);
+    font-weight: 700;
+    font-size: 0.95rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid #ffffff;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.avatar-circle.lg {
+    width: 80px;
+    height: 80px;
+    font-size: 1.8rem;
+    margin: 0 auto 16px auto;
+}
+
+/* Tables styling */
+.table-premium th {
+    font-weight: 600;
+    color: #64748b;
+    border-bottom-width: 1px;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 0.5px;
+    padding: 16px;
+}
+
+.table-premium td {
+    padding: 16px;
+    vertical-align: middle;
+}
+
+.table-premium tbody tr:hover {
+    background-color: var(--primary-light);
+}
+
+/* Tasklists : défilement horizontal + actions sur une ligne */
+.table-responsive-tasklists {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.table-tasklists {
+    min-width: 960px;
+}
+
+.table-tasklists .col-status {
+    width: 1%;
+    min-width: 118px;
+    white-space: nowrap;
+    vertical-align: middle;
+}
+
+.table-tasklists .col-dates {
+    width: 1%;
+    min-width: 108px;
+    vertical-align: middle;
+}
+
+.table-tasklists .col-actions {
+    width: 1%;
+    min-width: 420px;
+    white-space: nowrap;
+}
+
+.tasklist-status-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    white-space: nowrap;
+    line-height: 1.25;
+    max-width: none;
+}
+
+.table-tasklists .tasklist-status-badge {
+    font-size: 0.68rem;
+    padding: 0.35rem 0.65rem;
+    letter-spacing: 0.04em;
+}
+
+.tasklist-dates {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.tasklist-date-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    line-height: 1.2;
+}
+
+.tasklist-date-label {
+    font-size: 0.65rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: #64748b;
+}
+
+.tasklist-date-value {
+    display: flex;
+    flex-direction: column;
+    gap: 0.05rem;
+}
+
+.tasklist-date-day {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: #1e293b;
+    font-variant-numeric: tabular-nums;
+}
+
+.tasklist-date-time {
+    font-size: 0.75rem;
+    color: #64748b;
+    font-variant-numeric: tabular-nums;
+}
+
+.tasklist-date-item--treated .tasklist-date-label {
+    color: #059669;
+}
+
+.tasklist-date-item--treated .tasklist-date-day {
+    color: #047857;
+}
+
+.tasklist-date-item--treated .tasklist-date-time {
+    color: #10b981;
+}
+
+/* Wishlists : colonne demande compacte */
+.table-wishlists .col-demand {
+    width: 1%;
+    max-width: 240px;
+}
+
+.wishlist-demand-text {
+    display: inline-block;
+    width: fit-content;
+    max-width: min(240px, 100%);
+    padding: 0.4rem 0.65rem;
+    font-size: 0.8125rem;
+    line-height: 1.45;
+    white-space: pre-line;
+    word-break: break-word;
+    background: #f8fafc;
+    border-radius: 0.5rem;
+    font-family: var(--font-secondary, inherit);
+}
+
+.tasklist-actions {
+    display: inline-flex;
+    flex-wrap: nowrap;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.35rem;
+    white-space: nowrap;
+}
+
+.tasklist-actions .btn,
+.tasklist-actions form {
+    flex-shrink: 0;
+    margin: 0;
+}
+
+.tasklist-actions-row {
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.5rem;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* Badges styling */
+.badge-custom {
+    padding: 6px 12px;
+    border-radius: 30px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.badge-draft {
+    background: rgba(108, 117, 125, 0.15);
+    color: #495057;
+}
+
+.badge-pending {
+    background-color: #fef3c7;
+    color: #d97706;
+}
+
+.badge-in_progress {
+    background-color: #dbeafe;
+    color: #2563eb;
+}
+
+.badge-done {
+    background-color: #d1fae5;
+    color: #059669;
+}
+
+.badge-client_filled {
+    background-color: #fae8ff;
+    color: #c084fc;
+}
+
+.badge-suspended {
+    background-color: #fee2e2;
+    color: #dc2626;
+}
+
+.badge-active {
+    background-color: #d1fae5;
+    color: #059669;
+}
+
+/* Forms styling */
+.form-premium .form-control, .form-premium .form-select {
+    padding: 12px 16px;
+    border-radius: 12px;
+    border: 1px solid #cbd5e1;
+    font-family: var(--font-secondary);
+    transition: var(--transition-smooth);
+}
+
+.form-premium .form-control:focus, .form-premium .form-select:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 4px var(--primary-light);
+}
+
+.btn-premium {
+    padding: 12px 24px;
+    border-radius: 12px;
+    font-weight: 600;
+    transition: var(--transition-smooth);
+    border: none;
+}
+
+.btn-premium-primary {
+    background-color: var(--primary-color);
+    color: #ffffff;
+}
+
+.btn-premium-primary:hover {
+    background-color: var(--primary-hover);
+    color: #ffffff;
+}
+
+/* Custom Micro-animations */
+/* Terminer avec transform: none pour ne pas créer de contexte d'empilement
+   (sinon position:fixed des modales Bootstrap reste sous le backdrop body). */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(12px);
+    }
+    to {
+        opacity: 1;
+        transform: none;
+    }
+}
+
+.animate-fade-in {
+    animation: fadeInUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Responsive adjustments */
+@media (max-width: 991.98px) {
+    .sidebar {
+        transform: translateX(-100%);
+    }
+    .sidebar.show {
+        transform: translateX(0);
+    }
+    .main-wrapper {
+        margin-left: 0;
+    }
+    .top-navbar {
+        padding: 16px 20px;
+    }
+    .content-body {
+        padding: 20px;
+    }
+}
