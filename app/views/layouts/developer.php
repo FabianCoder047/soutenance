@@ -10,6 +10,7 @@ $initials = strtoupper(substr($user['first_name'] ?? 'D', 0, 1) . substr($user['
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= Helper::escape($title ?? 'Développeur') ?> | e-Media Support</title>
+    <link rel="icon" type="image/png" href="/assets/img/favicon.png">
     <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Bootstrap Icons -->

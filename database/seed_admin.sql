@@ -1,14 +1,14 @@
 -- Réinsère uniquement le compte administrateur par défaut
--- Email : fabiodab83@gmail.com | Mot de passe : apk_APK_4774
+-- Email : codingfabio20@gmail.com | Mot de passe : azerty123
 
 INSERT INTO users (id, email, role, first_name, last_name, password_hash, status, profile_complete)
 VALUES (
     'f0000000-0000-0000-0000-000000000001',
-    'fabiodab83@gmail.com',
+    'codingfabio20@gmail.com',
     'ADMIN',
     'Fabio',
     'DAB',
-    '$2y$12$KeTIn9US2nZsosCOQF.UnOvfSvr8mkDY8Qjvl7zlxPv05q2A9tjuK',
+    '$2y$12$3dnJqbSkuakcZ8C/RBwnserncKKjGFN45UChdBmoByFtBlIafr/Ee',
     'ACTIVE',
     1
 )

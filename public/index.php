@@ -56,10 +56,12 @@ Router::get('/', 'AuthController@login');
 Router::get('/login', 'AuthController@login');
 Router::post('/login', 'AuthController@login');
 Router::get('/logout', 'AuthController@logout');
-Router::get('/reset-password', 'AuthController@resetPassword');
-Router::post('/reset-password', 'AuthController@resetPassword');
-Router::get('/reset-password/confirm', 'AuthController@resetPasswordConfirm');
-Router::post('/reset-password/confirm', 'AuthController@resetPasswordConfirm');
+Router::get('/reset-password', 'AuthController@resetRequest');
+Router::post('/reset-password', 'AuthController@resetRequest');
+Router::get('/reset-password/confirm', 'AuthController@resetConfirm');
+Router::post('/reset-password/confirm', 'AuthController@resetConfirm');
+Router::get('/2fa', 'AuthController@verify2fa');
+Router::post('/2fa', 'AuthController@verify2fa');
 Router::get('/invitation', 'InvitationController@complete');
 Router::post('/invitation', 'InvitationController@complete');
 

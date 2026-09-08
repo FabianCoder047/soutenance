@@ -26,6 +26,8 @@ CREATE TABLE users (
     invite_token VARCHAR(255) UNIQUE,
     invite_expiry DATETIME,
     profile_complete TINYINT(1) NOT NULL DEFAULT 0,
+    otp_code      VARCHAR(255),           -- Code de vérification à 6 chiffres (hashé)
+    otp_expiry    DATETIME,               -- Expiration du code (300 s)
     created_at   DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at   DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
@@ -145,11 +147,11 @@ CREATE TABLE audit_logs (
 INSERT INTO users (id, email, role, first_name, last_name, password_hash, status, profile_complete)
 VALUES (
     'f0000000-0000-0000-0000-000000000001',
-    'fabiodab83@gmail.com',
+    'codingfabio20@gmail.com',
     'ADMIN',
     'Fabio',
     'DAB',
-    '$2y$12$KeTIn9US2nZsosCOQF.UnOvfSvr8mkDY8Qjvl7zlxPv05q2A9tjuK',
+    '$2y$12$3dnJqbSkuakcZ8C/RBwnserncKKjGFN45UChdBmoByFtBlIafr/Ee',
     'ACTIVE',
     1
 );

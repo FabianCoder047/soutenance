@@ -2,7 +2,7 @@
 declare(strict_types=1);
 
 /**
- * Envoi minimal SMTP (STARTTLS sur port 587), compatible Gmail / la plupart des hébergeurs.
+ * Envoi minimal SMTP — STARTTLS (port 587) ou SSL/TLS direct (port 465).
  */
 final class SmtpMailer {
     /**
@@ -16,6 +16,7 @@ final class SmtpMailer {
         $fromEmail = $cfg['from_email'];
         $fromName = $cfg['from_name'] ?? '';
         $verifyPeer = $cfg['verify_peer'] ?? true;
+        $useSsl = ($port === 465);
 
         $logDir = dirname(__DIR__, 2) . '/logs';
         $logErr = static function (string $msg) use ($logDir): void {
@@ -49,6 +50,13 @@ final class SmtpMailer {
         stream_set_timeout($socket, 20);
 
         try {
+            if ($useSsl) {
+                if (!stream_socket_enable_crypto($socket, true, STREAM_CRYPTO_METHOD_TLS_CLIENT)) {
+                    $logErr('négociation SSL échouée (port 465)');
+                    return false;
+                }
+            }
+
             if (!self::expect(self::readLines($socket), [220])) {
                 $logErr('pas de salutation 220');
                 return false;
@@ -60,21 +68,23 @@ final class SmtpMailer {
                 return false;
             }
 
-            self::write($socket, "STARTTLS\r\n");
-            if (!self::expect(self::readLines($socket), [220])) {
-                $logErr('STARTTLS refusé');
-                return false;
-            }
+            if (!$useSsl) {
+                self::write($socket, "STARTTLS\r\n");
+                if (!self::expect(self::readLines($socket), [220])) {
+                    $logErr('STARTTLS refusé');
+                    return false;
+                }
 
-            if (!stream_socket_enable_crypto($socket, true, STREAM_CRYPTO_METHOD_TLS_CLIENT)) {
-                $logErr('négociation TLS échouée');
-                return false;
-            }
+                if (!stream_socket_enable_crypto($socket, true, STREAM_CRYPTO_METHOD_TLS_CLIENT)) {
+                    $logErr('négociation TLS échouée');
+                    return false;
+                }
 
-            self::write($socket, "EHLO emedia-support.local\r\n");
-            if (!self::expect(self::readLines($socket), [250])) {
-                $logErr('EHLO après TLS refusé');
-                return false;
+                self::write($socket, "EHLO emedia-support.local\r\n");
+                if (!self::expect(self::readLines($socket), [250])) {
+                    $logErr('EHLO après TLS refusé');
+                    return false;
+                }
             }
 
             self::write($socket, "AUTH LOGIN\r\n");

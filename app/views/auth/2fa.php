@@ -3,11 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Connexion | e-Media Support</title>
+    <title>Vérification | e-Media Support</title>
     <link rel="icon" type="image/png" href="/assets/img/favicon.png">
-    <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Bootstrap Icons -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
@@ -29,14 +27,18 @@
             max-width: 440px;
             overflow: hidden;
         }
-        .form-control {
-            padding: 12px 16px;
+        .otp-input {
+            padding: 14px;
             border-radius: 12px;
             border: 1px solid #cbd5e1;
+            font-size: 1.5rem;
+            letter-spacing: 10px;
+            text-align: center;
+            font-weight: 600;
         }
-        .form-control:focus {
-            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.15);
-            border-color: #3b82f6;
+        .otp-input:focus {
+            border-color: #1e3a5f;
+            box-shadow: 0 0 0 0.2rem rgba(30, 58, 95, 0.15);
         }
         .btn-primary {
             padding: 12px;
@@ -56,8 +58,9 @@
     <div class="card login-card p-4 p-md-5">
         <div class="text-center mb-4">
             <img src="/assets/img/logo.png" alt="Logo e-Media Support" class="mb-3" style="width: 70px; height: 70px; object-fit: contain;">
-            <h3 class="fw-bold text-dark mb-1">e-Media Support</h3>
-            <p class="text-muted">Connectez-vous pour accéder à votre espace</p>
+            <h3 class="fw-bold text-dark mb-1">Vérification de sécurité</h3>
+            <p class="text-muted small mb-0">Un code à 6 chiffres vous a été envoyé par email.</p>
+            <p class="text-muted small">Durée de validité : <strong>5 minutes</strong></p>
         </div>
 
         <?php if (!empty($error)): ?>
@@ -67,38 +70,36 @@
             </div>
         <?php endif; ?>
 
-        <?php if (Session::has('success')): ?>
-            <div class="alert alert-success border-0 rounded-3 p-3 mb-3 d-flex align-items-center gap-2" style="font-size: 0.9rem;">
-                <i class="bi bi-check-circle-fill"></i>
-                <div><?= Session::get('success') ?></div>
-            </div>
-            <?php Session::remove('success'); ?>
-        <?php endif; ?>
-
-        <form action="/login" method="POST">
+        <form action="/2fa" method="POST">
             <input type="hidden" name="csrf_token" value="<?= Session::getCsrfToken() ?>">
-            
-            <div class="mb-3">
-                <label for="email" class="form-label fw-semibold text-muted">Adresse Email</label>
-                <div class="input-group">
-                    <span class="input-group-text bg-light border-end-0"><i class="bi bi-envelope text-muted"></i></span>
-                    <input type="email" class="form-control border-start-0 bg-light" id="email" name="email" value="<?= Helper::escape($email ?? '') ?>" required placeholder="nom@exemple.com">
-                </div>
-            </div>
 
             <div class="mb-4">
-                <div class="d-flex justify-content-between mb-1">
-                    <label for="password" class="form-label fw-semibold text-muted mb-0">Mot de passe</label>
-                    <a href="/reset-password" class="text-decoration-none small fw-semibold text-primary">Mot de passe oublié ?</a>
-                </div>
-                <div class="input-group">
-                    <span class="input-group-text bg-light border-end-0"><i class="bi bi-lock text-muted"></i></span>
-                    <input type="password" class="form-control border-start-0 bg-light" id="password" name="password" required placeholder="••••••••">
+                <label for="code" class="form-label fw-semibold text-muted">Code de vérification</label>
+                <input type="text"
+                       class="form-control otp-input"
+                       id="code"
+                       name="code"
+                       inputmode="numeric"
+                       maxlength="6"
+                       pattern="[0-9]{6}"
+                       autocomplete="one-time-code"
+                       required
+                       placeholder="000000">
+                <div class="form-text text-center mt-2">
+                    Vérifiez votre boîte de réception et votre dossier spam.
                 </div>
             </div>
 
-            <div class="d-grid mb-2">
-                <button type="submit" class="btn btn-primary">Se Connecter</button>
+            <div class="d-grid mb-3">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-shield-lock me-1"></i> Vérifier
+                </button>
+            </div>
+
+            <div class="text-center">
+                <a href="/login" class="text-decoration-none small fw-semibold text-muted">
+                    <i class="bi bi-arrow-left"></i> Retour à la connexion
+                </a>
             </div>
         </form>
     </div>

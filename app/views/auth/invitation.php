@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Compléter votre inscription | e-Media Support</title>
+    <link rel="icon" type="image/png" href="/assets/img/favicon.png">
     <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Bootstrap Icons -->
@@ -96,12 +97,12 @@
                     <!-- Admin / Dev specific fields -->
                     <div class="row mb-3">
                         <div class="col-md-6 mb-3 mb-md-0">
-                            <label for="first_name" class="form-label fw-semibold text-muted">Prénom</label>
-                            <input type="text" class="form-control bg-light" id="first_name" name="first_name" required value="<?= Helper::escape($_POST['first_name'] ?? '') ?>" placeholder="Ex: Jean">
-                        </div>
-                        <div class="col-md-6">
                             <label for="last_name" class="form-label fw-semibold text-muted">Nom</label>
                             <input type="text" class="form-control bg-light" id="last_name" name="last_name" required value="<?= Helper::escape($_POST['last_name'] ?? '') ?>" placeholder="Ex: DUPONT">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="first_name" class="form-label fw-semibold text-muted">Prénom</label>
+                            <input type="text" class="form-control bg-light" id="first_name" name="first_name" required value="<?= Helper::escape($_POST['first_name'] ?? '') ?>" placeholder="Ex: Jean">
                         </div>
                     </div>
                 <?php endif; ?>

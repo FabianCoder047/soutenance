@@ -68,7 +68,8 @@ class User {
         // Editable fields (email should be immutable as per spec 8.1: "L'email est immutable après création du compte")
         $editable = [
             'first_name', 'last_name', 'company_name', 'address', 
-            'password_hash', 'status', 'invite_token', 'invite_expiry', 'profile_complete'
+            'password_hash', 'status', 'invite_token', 'invite_expiry', 'profile_complete',
+            'otp_code', 'otp_expiry'
         ];
 
         foreach ($data as $key => $val) {

@@ -6,6 +6,7 @@ require_once dirname(__DIR__) . '/core/Session.php';
 require_once dirname(__DIR__) . '/core/Validator.php';
 require_once dirname(__DIR__) . '/core/Helper.php';
 require_once dirname(__DIR__) . '/core/Email.php';
+require_once dirname(__DIR__) . '/core/Audit.php';
 require_once dirname(__DIR__) . '/models/User.php';
 
 class AuthController {
@@ -39,10 +40,44 @@ class AuthController {
                     } else if ($user['status'] === 'PENDING') {
                         $error = 'Votre compte est en attente d\'activation. Veuillez utiliser le lien d\'invitation reçu par email.';
                     } else {
-                        // Success
-                        Session::set('user_id', $user['id']);
-                        Session::set('user', $user);
-                        $this->redirectByRole($user['role']);
+                        // Crédentiels valides : envoi d'un code de vérification à 6 chiffres (300 s)
+                        $otp = (string) random_int(100000, 999999);
+                        $otpHash = password_hash($otp, PASSWORD_BCRYPT, ['cost' => 10]);
+                        $otpExpiry = date('Y-m-d H:i:s', time() + 300);
+
+                        User::update($user['id'], [
+                            'otp_code' => $otpHash,
+                            'otp_expiry' => $otpExpiry,
+                        ]);
+
+                        $subject = "Code de vérification - e-Media Support";
+                        $body = "
+                            <h2>Vérification de connexion</h2>
+                            <p>Bonjour,</p>
+                            <p>Votre code de connexion à 6 chiffres est :</p>
+                            <p style=\"font-size: 28px; font-weight: bold; letter-spacing: 6px;\">{$otp}</p>
+                            <p>Ce code est valable <strong>5 minutes</strong>.</p>
+                            <p>Si vous n'êtes pas à l'origine de cette connexion, contactez immédiatement l'administrateur.</p>
+                        ";
+                        $sent = Email::send($user['email'], $subject, $body);
+
+                        if (!$sent) {
+                            $error = "Impossible d'envoyer le code de vérification. Veuillez réessayer.";
+                        } else {
+                            Audit::logAction('USER_LOGIN', 'User', $user['id'], $user['id'], [
+                                'email' => $user['email'],
+                                'role' => $user['role'],
+                            ]);
+                            Audit::logAction('OTP_SENT', 'User', $user['id'], $user['id'], [
+                                'email' => $user['email'],
+                                'role' => $user['role'],
+                                'expires_in' => 300,
+                            ]);
+
+                            Session::set('2fa_user_id', $user['id']);
+                            Session::set('2fa_email', $user['email']);
+                            Helper::redirect('/2fa');
+                        }
                     }
                 } else {
                     $error = 'Identifiants incorrects.';
@@ -53,7 +88,78 @@ class AuthController {
         include dirname(__DIR__) . '/views/auth/login.php';
     }
 
+    public function verify2fa(): void {
+        Session::start();
+        if (Auth::check()) {
+            $user = Auth::user();
+            $this->redirectByRole($user['role']);
+        }
+
+        $userId = Session::get('2fa_user_id');
+        if (!$userId) {
+            Helper::redirect('/login');
+        }
+
+        $user = User::findById($userId);
+        if (!$user) {
+            Session::remove('2fa_user_id');
+            Session::remove('2fa_email');
+            Helper::redirect('/login');
+        }
+
+        $error = null;
+
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $csrf = $_POST['csrf_token'] ?? null;
+            if (!Session::verifyCsrfToken($csrf)) {
+                http_response_code(403);
+                exit('CSRF token invalide');
+            }
+
+            $code = trim($_POST['code'] ?? '');
+            $valid = !empty($user['otp_code'])
+                && preg_match('/^\d{6}$/', $code) === 1
+                && password_verify($code, $user['otp_code'])
+                && !empty($user['otp_expiry'])
+                && strtotime($user['otp_expiry']) > time();
+
+            if ($valid) {
+                User::update($user['id'], [
+                    'otp_code' => null,
+                    'otp_expiry' => null,
+                ]);
+
+                Session::remove('2fa_user_id');
+                Session::remove('2fa_email');
+                Session::set('user_id', $user['id']);
+                Session::set('user', User::findById($user['id']));
+
+                Audit::logAction('OTP_VERIFIED', 'User', $user['id'], $user['id'], [
+                    'email' => $user['email'],
+                    'role' => $user['role'],
+                ]);
+
+                $this->redirectByRole($user['role']);
+            } else {
+                Audit::logAction('OTP_FAILED', 'User', $user['id'], $user['id'], [
+                    'email' => $user['email'],
+                    'role' => $user['role'],
+                ]);
+                $error = 'Code invalide ou expiré. Veuillez réessayer.';
+            }
+        }
+
+        include dirname(__DIR__) . '/views/auth/2fa.php';
+    }
+
     public function logout(): void {
+        $user = Auth::user();
+        if (!empty($user)) {
+            Audit::logAction('USER_LOGOUT', 'User', $user['id'], $user['id'], [
+                'email' => $user['email'],
+                'role' => $user['role'],
+            ]);
+        }
         Session::destroy();
         Helper::redirect('/login');
     }
@@ -66,7 +172,6 @@ class AuthController {
         }
 
         $error = null;
-        $success = null;
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $token = $_POST['csrf_token'] ?? null;
@@ -82,10 +187,12 @@ class AuthController {
                 $error = 'Adresse email invalide.';
             } else {
                 $user = User::findByEmail($email);
-                if ($user) {
+                if (!$user) {
+                    $error = 'Aucun compte associé à cette adresse email.';
+                } else {
                     $tokenValue = bin2hex(random_bytes(32));
                     $expiry = date('Y-m-d H:i:s', strtotime('+1 hour'));
-                    
+
                     User::update($user['id'], [
                         'invite_token' => $tokenValue,
                         'invite_expiry' => $expiry
@@ -102,10 +209,16 @@ class AuthController {
                         <p>Si vous n'êtes pas à l'origine de cette demande, vous pouvez ignorer cet email.</p>
                     ";
 
-                    Email::send($email, $subject, $body);
+                    $sent = Email::send($email, $subject, $body);
+
+                    Audit::logAction('PASSWORD_RESET_REQUESTED', 'User', $user['id'], $user['id'], [
+                        'email' => $user['email'],
+                        'email_sent' => $sent,
+                    ]);
+
+                    Session::set('success', 'Un lien de réinitialisation a été envoyé à votre adresse email.');
+                    Helper::redirect('/login');
                 }
-                // Always show success to prevent user enumeration
-                $success = 'Si l\'adresse email existe dans notre système, un lien de réinitialisation vous a été envoyé.';
             }
         }
 
@@ -164,6 +277,11 @@ class AuthController {
                     'status' => 'ACTIVE',
                     'profile_complete' => 1
                 ]);
+
+                Audit::logAction('PASSWORD_RESET_COMPLETED', 'User', $user['id'], $user['id'], [
+                    'email' => $user['email'],
+                ]);
+
                 $success = 'Votre mot de passe a été mis à jour avec succès. Vous pouvez maintenant vous connecter.';
             }
         }

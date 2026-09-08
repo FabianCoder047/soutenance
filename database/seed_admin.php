@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 /**
  * Réinsère le compte admin par défaut.
+ * Email : codingfabio20@gmail.com | Mot de passe : azerty123
  * Usage : php database/seed_admin.php
  */
 
@@ -36,11 +37,11 @@ $sql = <<<'SQL'
 INSERT INTO users (id, email, role, first_name, last_name, password_hash, status, profile_complete)
 VALUES (
     'f0000000-0000-0000-0000-000000000001',
-    'fabiodab83@gmail.com',
+    'codingfabio20@gmail.com',
     'ADMIN',
     'Fabio',
     'DAB',
-    '$2y$12$KeTIn9US2nZsosCOQF.UnOvfSvr8mkDY8Qjvl7zlxPv05q2A9tjuK',
+    '$2y$12$3dnJqbSkuakcZ8C/RBwnserncKKjGFN45UChdBmoByFtBlIafr/Ee',
     'ACTIVE',
     1
 )
@@ -62,5 +63,5 @@ if (!$db->query($sql)) {
 }
 
 echo "Compte admin recréé avec succès.\n";
-echo "  Email    : fabiodab83@gmail.com\n";
-echo "  Mot de passe : apk_APK_4774\n";
+echo "  Email    : codingfabio20@gmail.com\n";
+echo "  Mot de passe : azerty123\n";

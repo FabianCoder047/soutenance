@@ -16,7 +16,8 @@ class AuditController {
             'action' => $_GET['action'] ?? '',
             'user_id' => $_GET['user_id'] ?? '',
             'entity_type' => $_GET['entity_type'] ?? '',
-            'date' => $_GET['date'] ?? ''
+            'date_from' => $_GET['date_from'] ?? '',
+            'date_to' => $_GET['date_to'] ?? '',
         ];
 
         $logs = AuditLog::getAll($filters);

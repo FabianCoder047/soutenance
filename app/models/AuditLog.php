@@ -29,11 +29,15 @@ class AuditLog {
             $types .= "s";
             $values[] = $filters['entity_type'];
         }
-        if (isset($filters['date']) && $filters['date'] !== '') {
-            // Assume date format Y-m-d
-            $sql .= " AND DATE(a.created_at) = ?";
+        if (isset($filters['date_from']) && $filters['date_from'] !== '') {
+            $sql .= " AND a.created_at >= ?";
             $types .= "s";
-            $values[] = $filters['date'];
+            $values[] = $filters['date_from'] . ' 00:00:00';
+        }
+        if (isset($filters['date_to']) && $filters['date_to'] !== '') {
+            $sql .= " AND a.created_at <= ?";
+            $types .= "s";
+            $values[] = $filters['date_to'] . ' 23:59:59';
         }
 
         $sql .= " ORDER BY a.created_at DESC";

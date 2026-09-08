@@ -52,30 +52,32 @@ ob_start();
                 <p class="text-muted">Aucune activité enregistrée pour le moment.</p>
             <?php else: ?>
                 <div class="timeline">
-                    <ul class="list-group list-group-flush">
-                        <?php foreach ($recentLogs as $log): ?>
-                            <li class="list-group-item px-0 py-3 border-light">
-                                <div class="d-flex justify-content-between align-items-start">
-                                    <div>
-                                        <span class="badge rounded-pill bg-light text-dark border me-2" style="font-size: 0.75rem;">
-                                            <?= Helper::escape($log['action']) ?>
-                                        </span>
-                                        <span class="text-muted small"><?= Helper::escape($log['email']) ?></span>
-                                        <p class="mb-0 mt-2 small text-dark">
-                                            Entité: <strong><?= Helper::escape($log['entity_type']) ?></strong> 
-                                            (ID: <span class="font-monospace text-muted"><?= substr(Helper::escape($log['entity_id']), 0, 8) ?>...</span>)
-                                        </p>
-                                        <?php if (!empty($log['metadata'])): ?>
-                                            <div class="bg-light rounded p-2 mt-2 small font-monospace" style="font-size: 0.8rem;">
-                                                <?= Helper::escape($log['metadata']) ?>
-                                            </div>
-                                        <?php endif; ?>
-                                    </div>
-                                    <small class="text-muted ms-2"><?= Helper::formatDateTime($log['created_at']) ?></small>
+<ul class="list-group list-group-flush">
+                    <?php foreach ($recentLogs as $log): ?>
+                        <li class="list-group-item px-0 py-3 border-light">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <span class="badge rounded-pill bg-light text-dark border me-2" style="font-size: 0.75rem;">
+                                        <?= Helper::escape(Helper::actionLabel($log['action'])) ?>
+                                    </span>
+                                    <span class="text-muted small"><?= Helper::escape($log['email']) ?></span>
+                                    <p class="mb-0 mt-2 small text-dark">
+                                        <strong><?= Helper::escape(Helper::entityLabel($log['entity_type'])) ?></strong>
+                                    </p>
+                                    <?php $details = Helper::auditMetadata($log['metadata']); ?>
+                                    <?php if (!empty($details)): ?>
+                                        <div class="mt-2 small text-muted">
+                                            <?php foreach ($details as $label => $val): ?>
+                                                <span class="d-inline-block me-3"><i class="bi bi-dot"></i><?= Helper::escape($label) ?> : <?= Helper::escape($val) ?></span>
+                                            <?php endforeach; ?>
+                                        </div>
+                                    <?php endif; ?>
                                 </div>
-                            </li>
-                        <?php endforeach; ?>
-                    </ul>
+                                <small class="text-muted ms-2"><?= Helper::formatDateTime($log['created_at']) ?></small>
+                            </div>
+                        </li>
+                    <?php endforeach; ?>
+                </ul>
                 </div>
                 <div class="mt-4 text-end">
                     <a href="/admin/audit" class="btn btn-sm btn-outline-primary rounded-pill px-3">Voir tout l'historique</a>
