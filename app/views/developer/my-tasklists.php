@@ -13,35 +13,29 @@ ob_start();
 
 <!-- Filter & Actions Header -->
 <div class="card-premium p-4 mb-4">
-    <div class="row align-items-center g-3">
-        <div class="col-md-9">
-            <form action="/developer/my-tasklists" method="GET" class="row g-2">
-                <?php if (!empty($filters['project_id'])): ?>
-                    <input type="hidden" name="project_id" value="<?= Helper::escape($filters['project_id']) ?>">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+        <form action="/developer/my-tasklists" method="GET" class="d-flex flex-wrap align-items-center gap-2 mb-0">
+            <?php if (!empty($filters['project_id'])): ?>
+                <input type="hidden" name="project_id" value="<?= Helper::escape($filters['project_id']) ?>">
+            <?php endif; ?>
+            <select name="status" class="form-select rounded-pill shadow-sm" style="font-size: 0.9rem; width: auto;">
+                <option value="">Tous les statuts</option>
+                <option value="DRAFT" <?= ($filters['status'] ?? '') === 'DRAFT' ? 'selected' : '' ?>>Brouillon</option>
+                <option value="PENDING" <?= ($filters['status'] ?? '') === 'PENDING' ? 'selected' : '' ?>>En attente</option>
+                <option value="IN_PROGRESS" <?= ($filters['status'] ?? '') === 'IN_PROGRESS' ? 'selected' : '' ?>>En cours</option>
+                <option value="CLIENT_FILLED" <?= ($filters['status'] ?? '') === 'CLIENT_FILLED' ? 'selected' : '' ?>>Complété par Client</option>
+                <option value="DONE" <?= ($filters['status'] ?? '') === 'DONE' ? 'selected' : '' ?>>Traité</option>
+            </select>
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-dark rounded-pill px-3 shadow-sm"><i class="bi bi-filter"></i> Filtrer</button>
+                <?php if (!empty($filters['status']) || !empty($filters['project_id'])): ?>
+                    <a href="/developer/my-tasklists" class="btn btn-outline-secondary rounded-pill px-3 shadow-sm"><i class="bi bi-arrow-counterclockwise"></i> Réinitialiser</a>
                 <?php endif; ?>
-                <div class="col-auto">
-                    <select name="status" class="form-select rounded-pill shadow-sm" style="font-size: 0.9rem;">
-                        <option value="">Tous les statuts</option>
-                        <option value="DRAFT" <?= ($filters['status'] ?? '') === 'DRAFT' ? 'selected' : '' ?>>Brouillon</option>
-                        <option value="PENDING" <?= ($filters['status'] ?? '') === 'PENDING' ? 'selected' : '' ?>>En attente</option>
-                        <option value="IN_PROGRESS" <?= ($filters['status'] ?? '') === 'IN_PROGRESS' ? 'selected' : '' ?>>En cours</option>
-                        <option value="CLIENT_FILLED" <?= ($filters['status'] ?? '') === 'CLIENT_FILLED' ? 'selected' : '' ?>>Complété par Client</option>
-                        <option value="DONE" <?= ($filters['status'] ?? '') === 'DONE' ? 'selected' : '' ?>>Traité</option>
-                    </select>
-                </div>
-                <div class="col-auto">
-                    <button type="submit" class="btn btn-dark rounded-pill px-3 shadow-sm"><i class="bi bi-filter"></i> Filtrer</button>
-                    <?php if (!empty($filters['status']) || !empty($filters['project_id'])): ?>
-                        <a href="/developer/my-tasklists" class="btn btn-outline-secondary rounded-pill px-3 shadow-sm">Réinitialiser</a>
-                    <?php endif; ?>
-                </div>
-            </form>
-        </div>
-        <div class="col-md-3 text-md-end">
-            <a href="/admin/tasklists/create" class="btn btn-primary rounded-pill px-4 shadow-sm">
-                <i class="bi bi-plus-circle me-1"></i> Créer Tasklist
-            </a>
-        </div>
+            </div>
+        </form>
+        <a href="/admin/tasklists/create" class="btn btn-primary rounded-pill px-4 shadow-sm text-nowrap">
+            <i class="bi bi-plus-circle me-1"></i> Créer Tasklist
+        </a>
     </div>
 </div>
 
@@ -93,6 +87,7 @@ ob_start();
             </tbody>
         </table>
     </div>
+    <?php include dirname(__DIR__) . '/partials/pagination.php'; ?>
 </div>
 
 <?php

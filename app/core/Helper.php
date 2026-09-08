@@ -63,6 +63,31 @@ class Helper {
     }
 
     /**
+     * Calcule les paramètres de pagination à partir de la requête.
+     * Renvoie : page, per_page, total_pages, offset, per_page_options.
+     */
+    public static function paginationFromRequest(array $get, int $total, array $perPageOptions = [10, 25, 50, 100], int $defaultPerPage = 25): array {
+        $perPage = (int)($get['per_page'] ?? $defaultPerPage);
+        if (!in_array($perPage, $perPageOptions, true)) {
+            $perPage = $defaultPerPage;
+        }
+
+        $page = max(1, (int)($get['page'] ?? 1));
+        $totalPages = max(1, (int)ceil($total / $perPage));
+        if ($page > $totalPages) {
+            $page = $totalPages;
+        }
+
+        return [
+            'page' => $page,
+            'per_page' => $perPage,
+            'total_pages' => $totalPages,
+            'offset' => ($page - 1) * $perPage,
+            'per_page_options' => $perPageOptions,
+        ];
+    }
+
+    /**
      * Tableau des actions d'audit [code => libellé français].
      */
     public static function auditActions(): array {

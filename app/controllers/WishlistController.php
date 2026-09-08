@@ -5,9 +5,11 @@ require_once dirname(__DIR__) . '/core/Auth.php';
 require_once dirname(__DIR__) . '/core/Session.php';
 require_once dirname(__DIR__) . '/core/Validator.php';
 require_once dirname(__DIR__) . '/core/Helper.php';
+require_once dirname(__DIR__) . '/core/Email.php';
 require_once dirname(__DIR__) . '/core/Audit.php';
 require_once dirname(__DIR__) . '/models/Wishlist.php';
 require_once dirname(__DIR__) . '/models/Project.php';
+require_once dirname(__DIR__) . '/models/User.php';
 
 class WishlistController {
     public function indexAdmin(): void {
@@ -18,6 +20,11 @@ class WishlistController {
             'status' => $_GET['status'] ?? '',
             'project_id' => $_GET['project_id'] ?? ''
         ];
+
+        $total = Wishlist::countAll($filters);
+        $pagination = Helper::paginationFromRequest($_GET, $total);
+        $filters['limit'] = $pagination['per_page'];
+        $filters['offset'] = $pagination['offset'];
 
         $wishlists = Wishlist::getAll($filters);
         $projects = Project::getAll(['status' => 'ACTIVE']);
@@ -63,7 +70,13 @@ class WishlistController {
         Auth::require('CLIENT');
         $user = Auth::user();
 
-        $wishlists = Wishlist::getAll(['client_id' => $user['id']]);
+        $filters = ['client_id' => $user['id']];
+        $total = Wishlist::countAll($filters);
+        $pagination = Helper::paginationFromRequest($_GET, $total);
+        $filters['limit'] = $pagination['per_page'];
+        $filters['offset'] = $pagination['offset'];
+
+        $wishlists = Wishlist::getAll($filters);
 
         include dirname(__DIR__) . '/views/client/wishlists.php';
     }
@@ -111,6 +124,18 @@ class WishlistController {
                     Audit::logAction('WISHLIST_CREATED', 'Wishlist', $wishlistId, $user['id'], [
                         'content_preview' => $preview
                     ]);
+
+                    // Notification email aux administrateurs
+                    $admins = User::getAdmins();
+                    foreach ($admins as $admin) {
+                        if (!empty($admin['email'])) {
+                            Email::notification(
+                                $admin['email'],
+                                'Nouvelle demande client – e-Media Support',
+                                "Un client de la plateforme a soumis une nouvelle demande. Connectez-vous à votre espace pour la consulter."
+                            );
+                        }
+                    }
 
                     Session::set('success', "Votre liste d'attentes a été envoyée avec succès.");
                     Helper::redirect('/client/wishlists');

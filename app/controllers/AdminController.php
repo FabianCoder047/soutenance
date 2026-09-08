@@ -58,6 +58,11 @@ class AdminController {
             'status' => $_GET['status'] ?? ''
         ];
 
+        $total = User::countAll($filters);
+        $pagination = Helper::paginationFromRequest($_GET, $total);
+        $filters['limit'] = $pagination['per_page'];
+        $filters['offset'] = $pagination['offset'];
+
         $users = User::getAll($filters);
 
         include dirname(__DIR__) . '/views/admin/users.php';

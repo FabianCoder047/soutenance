@@ -41,7 +41,7 @@ ob_start();
             <thead>
                 <tr>
                     <th>Client</th>
-                    <th class="col-demand">Demande / Liste d'attente</th>
+                    <th class="col-demand">Demandes</th>
                     <th>Projet lié</th>
                     <th>Statut</th>
                     <th>Date d'envoi</th>

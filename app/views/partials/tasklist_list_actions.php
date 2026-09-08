@@ -19,7 +19,8 @@ $canPublish = $canEdit;
 $canTreat = in_array($layoutRole, ['ADMIN', 'DEV'], true)
     && $status !== 'DONE'
     && !Tasklist::isDraft($row)
-    && ($layoutRole === 'ADMIN' || ($row['assigned_to_id'] ?? '') === $user['id']);
+    && ($layoutRole === 'ADMIN' || ($row['assigned_to_id'] ?? '') === $user['id'])
+    && Tasklist::hasClientResponded($row);
 
 $canRespond = Tasklist::canClientRespond($user, $row);
 $clientHasResponded = $layoutRole === 'CLIENT' && Tasklist::hasClientResponded($row);

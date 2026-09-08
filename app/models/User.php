@@ -99,22 +99,20 @@ class User {
 
     public static function getAll(array $filters = []): array {
         $db = Database::getInstance();
-        $sql = "SELECT * FROM users WHERE 1=1";
-        $types = "";
-        $values = [];
+        [$where, $types, $values] = self::buildWhere($filters);
 
-        if (!empty($filters['role'])) {
-            $sql .= " AND role = ?";
-            $types .= "s";
-            $values[] = $filters['role'];
-        }
-        if (!empty($filters['status'])) {
-            $sql .= " AND status = ?";
-            $types .= "s";
-            $values[] = $filters['status'];
-        }
+        $sql = "SELECT * FROM users $where ORDER BY created_at DESC";
 
-        $sql .= " ORDER BY created_at DESC";
+        if (isset($filters['limit']) && (int)$filters['limit'] > 0) {
+            $sql .= " LIMIT ?";
+            $types .= "i";
+            $values[] = (int)$filters['limit'];
+            if (isset($filters['offset']) && (int)$filters['offset'] > 0) {
+                $sql .= " OFFSET ?";
+                $types .= "i";
+                $values[] = (int)$filters['offset'];
+            }
+        }
 
         if (empty($values)) {
             $res = $db->query($sql);
@@ -127,8 +125,48 @@ class User {
         return $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
     }
 
+    public static function countAll(array $filters = []): int {
+        $db = Database::getInstance();
+        [$where, $types, $values] = self::buildWhere($filters);
+
+        $sql = "SELECT COUNT(*) AS c FROM users $where";
+
+        if (empty($values)) {
+            $res = $db->query($sql);
+            return $res ? (int)$res->fetch_assoc()['c'] : 0;
+        }
+
+        $stmt = $db->prepare($sql);
+        $stmt->bind_param($types, ...$values);
+        $stmt->execute();
+        return (int)$stmt->get_result()->fetch_assoc()['c'];
+    }
+
+    private static function buildWhere(array $filters): array {
+        $where = "WHERE 1=1";
+        $types = "";
+        $values = [];
+
+        if (!empty($filters['role'])) {
+            $where .= " AND role = ?";
+            $types .= "s";
+            $values[] = $filters['role'];
+        }
+        if (!empty($filters['status'])) {
+            $where .= " AND status = ?";
+            $types .= "s";
+            $values[] = $filters['status'];
+        }
+
+        return [$where, $types, $values];
+    }
+
     public static function getClients(): array {
         return self::getAll(['role' => 'CLIENT']);
+    }
+
+    public static function getAdmins(): array {
+        return self::getAll(['role' => 'ADMIN', 'status' => 'ACTIVE']);
     }
 
     public static function getDevelopers(): array {

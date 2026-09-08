@@ -226,14 +226,14 @@ body {
     background-color: var(--primary-light);
 }
 
-/* Tasklists : défilement horizontal + actions sur une ligne */
+/* Tasklists : défilement horizontal */
 .table-responsive-tasklists {
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
 }
 
 .table-tasklists {
-    min-width: 960px;
+    min-width: 860px;
 }
 
 .table-tasklists .col-status {
@@ -251,8 +251,8 @@ body {
 
 .table-tasklists .col-actions {
     width: 1%;
-    min-width: 420px;
-    white-space: nowrap;
+    min-width: 220px;
+    vertical-align: middle;
 }
 
 .tasklist-status-badge {
@@ -343,12 +343,11 @@ body {
 }
 
 .tasklist-actions {
-    display: inline-flex;
-    flex-wrap: nowrap;
+    display: flex;
+    flex-wrap: wrap;
     align-items: center;
     justify-content: flex-end;
-    gap: 0.35rem;
-    white-space: nowrap;
+    gap: 0.4rem;
 }
 
 .tasklist-actions .btn,
@@ -460,6 +459,121 @@ body {
 
 .animate-fade-in {
     animation: fadeInUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Audit logs design */
+.audit-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.4rem 0.75rem;
+    border-radius: 30px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    white-space: nowrap;
+}
+
+.audit-badge--create {
+    background-color: #d1fae5;
+    color: #059669;
+}
+
+.audit-badge--update {
+    background-color: #dbeafe;
+    color: #2563eb;
+}
+
+.audit-badge--danger {
+    background-color: #fee2e2;
+    color: #dc2626;
+}
+
+.audit-badge--auth {
+    background-color: #f1f5f9;
+    color: #59647a;
+}
+
+.avatar-circle.sm {
+    width: 36px;
+    height: 36px;
+    font-size: 0.72rem;
+}
+
+.audit-user-cell {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.audit-entity-cell {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 600;
+    color: #334155;
+    white-space: nowrap;
+}
+
+.audit-entity-icon {
+    width: 30px;
+    height: 30px;
+    border-radius: 10px;
+    background: var(--primary-light);
+    color: var(--primary-color);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.9rem;
+    flex-shrink: 0;
+}
+
+.audit-date {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    line-height: 1.25;
+}
+
+.audit-date-relative {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #1e293b;
+}
+
+.audit-date-full {
+    font-size: 0.72rem;
+    color: #64748b;
+    font-variant-numeric: tabular-nums;
+}
+
+.audit-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+}
+
+.audit-meta-item {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.4rem;
+    font-size: 0.78rem;
+    line-height: 1.5;
+}
+
+.audit-meta-label {
+    font-weight: 600;
+    color: #64748b;
+}
+
+.audit-meta-value {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 0.4rem;
+    padding: 0.05rem 0.5rem;
+    color: #1e293b;
+    font-family: var(--font-secondary, inherit);
 }
 
 /* Responsive adjustments */

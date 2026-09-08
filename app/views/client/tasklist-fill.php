@@ -29,7 +29,7 @@ ob_start();
                     <?php
                         $questionId = $question['id'];
                         $existing = $answersByQuestion[$questionId] ?? null;
-                        $isRequired = (int)$question['required'] === 1;
+                        $isRequired = true;
                     ?>
                     <div class="mb-4 pb-4 border-bottom">
                         <label class="form-label fw-semibold d-block">

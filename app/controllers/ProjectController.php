@@ -5,6 +5,7 @@ require_once dirname(__DIR__) . '/core/Auth.php';
 require_once dirname(__DIR__) . '/core/Session.php';
 require_once dirname(__DIR__) . '/core/Validator.php';
 require_once dirname(__DIR__) . '/core/Helper.php';
+require_once dirname(__DIR__) . '/core/Email.php';
 require_once dirname(__DIR__) . '/core/Audit.php';
 require_once dirname(__DIR__) . '/models/Project.php';
 require_once dirname(__DIR__) . '/models/User.php';
@@ -21,6 +22,11 @@ class ProjectController {
         if (!empty($_GET['client_id'])) {
             $filters['client_id'] = $_GET['client_id'];
         }
+
+        $total = Project::countAll($filters);
+        $pagination = Helper::paginationFromRequest($_GET, $total);
+        $filters['limit'] = $pagination['per_page'];
+        $filters['offset'] = $pagination['offset'];
 
         $projects = Project::getAll($filters);
         $clients = User::getClients();
@@ -71,6 +77,13 @@ class ProjectController {
                         'client_id' => $clientId,
                         'client_name' => $client['company_name'] ?? $client['email']
                     ]);
+
+                    // Notification email au client concerné
+                    Email::notification(
+                        $client['email'],
+                        'Nouveau projet – e-Media Support',
+                        "Un nouveau projet a été créé à votre attention sur e-Media Support. Connectez-vous à votre espace pour le consulter."
+                    );
 
                     Session::set('success', "Le projet \"{$name}\" a été créé avec succès.");
                     
@@ -209,7 +222,13 @@ class ProjectController {
         // Let's add `/developer/projects` to map to `ProjectController@indexDevAll` or similar. This is very clean and aligns with the pages defined in 4.2!
         
         $myProjectsOnly = true;
-        $projects = Project::getAll(['created_by_id' => $user['id']]);
+        $filters = ['created_by_id' => $user['id']];
+        $total = Project::countAll($filters);
+        $pagination = Helper::paginationFromRequest($_GET, $total);
+        $filters['limit'] = $pagination['per_page'];
+        $filters['offset'] = $pagination['offset'];
+
+        $projects = Project::getAll($filters);
 
         include dirname(__DIR__) . '/views/developer/my-projects.php';
     }
@@ -219,7 +238,13 @@ class ProjectController {
         $user = Auth::user();
 
         // All active projects (read-only view)
-        $projects = Project::getAll(['status' => 'ACTIVE']);
+        $filters = ['status' => 'ACTIVE'];
+        $total = Project::countAll($filters);
+        $pagination = Helper::paginationFromRequest($_GET, $total);
+        $filters['limit'] = $pagination['per_page'];
+        $filters['offset'] = $pagination['offset'];
+
+        $projects = Project::getAll($filters);
 
         include dirname(__DIR__) . '/views/developer/projects.php';
     }
@@ -229,7 +254,13 @@ class ProjectController {
         $user = Auth::user();
 
         // Client projects
-        $projects = Project::getAll(['client_id' => $user['id']]);
+        $filters = ['client_id' => $user['id']];
+        $total = Project::countAll($filters);
+        $pagination = Helper::paginationFromRequest($_GET, $total);
+        $filters['limit'] = $pagination['per_page'];
+        $filters['offset'] = $pagination['offset'];
+
+        $projects = Project::getAll($filters);
 
         include dirname(__DIR__) . '/views/client/projects.php';
     }

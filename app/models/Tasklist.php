@@ -237,7 +237,8 @@ class Tasklist {
 
     public static function getAll(array $filters = []): array {
         $db = Database::getInstance();
-        
+        [$where, $types, $values] = self::buildWhere($filters);
+
         $sql = "SELECT t.*, 
                        p.name AS project_name, p.client_id AS project_client_id,
                        c.company_name AS client_company,
@@ -248,42 +249,19 @@ class Tasklist {
                 JOIN users c ON p.client_id = c.id
                 JOIN users u ON t.created_by_id = u.id
                 LEFT JOIN users a ON t.assigned_to_id = a.id
-                WHERE 1=1";
-        
-        $types = "";
-        $values = [];
+                $where
+                ORDER BY t.created_at DESC";
 
-        if (isset($filters['project_id']) && $filters['project_id'] !== '') {
-            $sql .= " AND t.project_id = ?";
-            $types .= "s";
-            $values[] = $filters['project_id'];
+        if (isset($filters['limit']) && (int)$filters['limit'] > 0) {
+            $sql .= " LIMIT ?";
+            $types .= "i";
+            $values[] = (int)$filters['limit'];
+            if (isset($filters['offset']) && (int)$filters['offset'] > 0) {
+                $sql .= " OFFSET ?";
+                $types .= "i";
+                $values[] = (int)$filters['offset'];
+            }
         }
-        if (isset($filters['status']) && $filters['status'] !== '') {
-            $sql .= " AND t.status = ?";
-            $types .= "s";
-            $values[] = $filters['status'];
-        }
-        if (isset($filters['assigned_to_id']) && $filters['assigned_to_id'] !== '') {
-            $sql .= " AND t.assigned_to_id = ?";
-            $types .= "s";
-            $values[] = $filters['assigned_to_id'];
-        }
-        if (isset($filters['dev_access_id']) && $filters['dev_access_id'] !== '') {
-            $sql .= " AND (t.assigned_to_id = ? OR t.created_by_id = ?)";
-            $types .= "ss";
-            $values[] = $filters['dev_access_id'];
-            $values[] = $filters['dev_access_id'];
-        }
-        if (isset($filters['client_id']) && $filters['client_id'] !== '') {
-            $sql .= " AND p.client_id = ?";
-            $types .= "s";
-            $values[] = $filters['client_id'];
-        }
-        if (!empty($filters['exclude_draft'])) {
-            $sql .= " AND t.status != 'DRAFT'";
-        }
-
-        $sql .= " ORDER BY t.created_at DESC";
 
         if (empty($values)) {
             $res = $db->query($sql);
@@ -294,5 +272,63 @@ class Tasklist {
         $stmt->bind_param($types, ...$values);
         $stmt->execute();
         return $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+    }
+
+    public static function countAll(array $filters = []): int {
+        $db = Database::getInstance();
+        [$where, $types, $values] = self::buildWhere($filters);
+
+        $sql = "SELECT COUNT(*) AS c
+                FROM tasklists t
+                JOIN projects p ON t.project_id = p.id
+                $where";
+
+        if (empty($values)) {
+            $res = $db->query($sql);
+            return $res ? (int)$res->fetch_assoc()['c'] : 0;
+        }
+
+        $stmt = $db->prepare($sql);
+        $stmt->bind_param($types, ...$values);
+        $stmt->execute();
+        return (int)$stmt->get_result()->fetch_assoc()['c'];
+    }
+
+    private static function buildWhere(array $filters): array {
+        $where = "WHERE 1=1";
+        $types = "";
+        $values = [];
+
+        if (isset($filters['project_id']) && $filters['project_id'] !== '') {
+            $where .= " AND t.project_id = ?";
+            $types .= "s";
+            $values[] = $filters['project_id'];
+        }
+        if (isset($filters['status']) && $filters['status'] !== '') {
+            $where .= " AND t.status = ?";
+            $types .= "s";
+            $values[] = $filters['status'];
+        }
+        if (isset($filters['assigned_to_id']) && $filters['assigned_to_id'] !== '') {
+            $where .= " AND t.assigned_to_id = ?";
+            $types .= "s";
+            $values[] = $filters['assigned_to_id'];
+        }
+        if (isset($filters['dev_access_id']) && $filters['dev_access_id'] !== '') {
+            $where .= " AND (t.assigned_to_id = ? OR t.created_by_id = ?)";
+            $types .= "ss";
+            $values[] = $filters['dev_access_id'];
+            $values[] = $filters['dev_access_id'];
+        }
+        if (isset($filters['client_id']) && $filters['client_id'] !== '') {
+            $where .= " AND p.client_id = ?";
+            $types .= "s";
+            $values[] = $filters['client_id'];
+        }
+        if (!empty($filters['exclude_draft'])) {
+            $where .= " AND t.status != 'DRAFT'";
+        }
+
+        return [$where, $types, $values];
     }
 }

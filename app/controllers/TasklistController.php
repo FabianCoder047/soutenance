@@ -5,6 +5,7 @@ require_once dirname(__DIR__) . '/core/Auth.php';
 require_once dirname(__DIR__) . '/core/Session.php';
 require_once dirname(__DIR__) . '/core/Validator.php';
 require_once dirname(__DIR__) . '/core/Helper.php';
+require_once dirname(__DIR__) . '/core/Email.php';
 require_once dirname(__DIR__) . '/core/Audit.php';
 require_once dirname(__DIR__) . '/models/Tasklist.php';
 require_once dirname(__DIR__) . '/models/TasklistQuestion.php';
@@ -21,6 +22,11 @@ class TasklistController {
             'status' => $_GET['status'] ?? '',
             'assigned_to_id' => $_GET['assigned_to_id'] ?? ''
         ];
+
+        $total = Tasklist::countAll($filters);
+        $pagination = Helper::paginationFromRequest($_GET, $total);
+        $filters['limit'] = $pagination['per_page'];
+        $filters['offset'] = $pagination['offset'];
 
         $tasklists = Tasklist::getAll($filters);
         $projects = Project::getAll(['status' => 'ACTIVE']);
@@ -231,6 +237,15 @@ class TasklistController {
             'new_assignee' => $assignedToId
         ]);
 
+        // Notification email au développeur assigné
+        if (!empty($dev['email'])) {
+            Email::notification(
+                $dev['email'],
+                'Tasklist assignée – e-Media Support',
+                "La tasklist « {$tasklist['title']} » vous a été assignée. Connectez-vous à votre espace pour la consulter."
+            );
+        }
+
         Session::set('success', "La tasklist a été réassignée à " . ($dev['first_name'] ?? '') . " " . ($dev['last_name'] ?? '') . ".");
         Helper::redirect('/admin/tasklists');
     }
@@ -270,6 +285,16 @@ class TasklistController {
             Helper::redirect('/developer/my-tasklists');
         }
 
+        if (!Tasklist::hasClientResponded($tasklist)) {
+            Session::set('error', "Le client doit répondre à toutes les questions avant que la tasklist puisse être traitée.");
+            Helper::redirect($user['role'] === 'ADMIN' ? '/admin/tasklists' : '/developer/my-tasklists');
+        }
+
+        if (TasklistQuestion::countUnanswered($tasklistId) > 0) {
+            Session::set('error', "Toutes les questions n'ont pas encore été répondues par le client. La tasklist ne peut pas être traitée.");
+            Helper::redirect($user['role'] === 'ADMIN' ? '/admin/tasklists' : '/developer/my-tasklists');
+        }
+
         Tasklist::treat($tasklistId);
 
         Audit::logAction('TASKLIST_TREATED', 'Tasklist', $tasklistId, $user['id'], [
@@ -295,6 +320,11 @@ class TasklistController {
             'project_id' => $_GET['project_id'] ?? '',
         ];
 
+        $total = Tasklist::countAll($filters);
+        $pagination = Helper::paginationFromRequest($_GET, $total);
+        $filters['limit'] = $pagination['per_page'];
+        $filters['offset'] = $pagination['offset'];
+
         $tasklists = Tasklist::getAll($filters);
         $answersByTasklist = $this->loadAnswersForTasklists($tasklists);
         $filteredProject = !empty($filters['project_id'])
@@ -314,6 +344,11 @@ class TasklistController {
             'project_id' => $_GET['project_id'] ?? '',
             'exclude_draft' => true,
         ];
+
+        $total = Tasklist::countAll($filters);
+        $pagination = Helper::paginationFromRequest($_GET, $total);
+        $filters['limit'] = $pagination['per_page'];
+        $filters['offset'] = $pagination['offset'];
 
         $tasklists = Tasklist::getAll($filters);
         $answersByTasklist = $this->loadAnswersForTasklists($tasklists);
@@ -353,7 +388,9 @@ class TasklistController {
         $canTreat = in_array($user['role'], ['ADMIN', 'DEV'], true)
             && $tasklist['status'] !== 'DONE'
             && !Tasklist::isDraft($tasklist)
-            && ($user['role'] === 'ADMIN' || $tasklist['assigned_to_id'] === $user['id']);
+            && ($user['role'] === 'ADMIN' || $tasklist['assigned_to_id'] === $user['id'])
+            && Tasklist::hasClientResponded($tasklist)
+            && TasklistQuestion::countUnanswered($tasklistId) === 0;
 
         $layout = match ($user['role']) {
             'ADMIN' => 'admin',
@@ -437,6 +474,16 @@ class TasklistController {
         Audit::logAction('TASKLIST_PUBLISHED', 'Tasklist', $tasklistId, $user['id'], [
             'title' => $tasklist['title'],
         ]);
+
+        // Notification email au client du projet (uniquement à la publication)
+        $project = Project::findById($tasklist['project_id']);
+        if ($project && !empty($project['client_email'])) {
+            Email::notification(
+                $project['client_email'],
+                'Nouvelle tasklist – e-Media Support',
+                "Une nouvelle tasklist a été envoyée pour le projet « {$project['name']} ». Connectez-vous à votre espace pour la consulter et y répondre."
+            );
+        }
 
         Session::set('success', 'La tasklist a été envoyée au client. Il peut maintenant la consulter et y répondre.');
         Helper::redirect('/tasklists/show?id=' . urlencode($tasklistId));
@@ -546,6 +593,22 @@ class TasklistController {
             'client_id' => $user['id'],
             'questions_answered' => count($questions),
         ]);
+
+        // Notification email à la personne en charge de la tasklist
+        $handlerId = $tasklist['assigned_to_id'] ?? null;
+        if (empty($handlerId)) {
+            $handlerId = $tasklist['created_by_id'] ?? null;
+        }
+        if (!empty($handlerId)) {
+            $handler = User::findById($handlerId);
+            if ($handler && !empty($handler['email'])) {
+                Email::notification(
+                    $handler['email'],
+                    'Réponse client reçue – e-Media Support',
+                    "Le client a répondu à la tasklist « {$tasklist['title']} ». Connectez-vous à votre espace pour la consulter et la traiter."
+                );
+            }
+        }
 
         Session::set('success', "Votre réponse a été enregistrée avec succès.");
         Helper::redirect('/client/tasklists');

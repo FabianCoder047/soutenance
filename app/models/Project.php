@@ -72,35 +72,27 @@ class Project {
 
     public static function getAll(array $filters = []): array {
         $db = Database::getInstance();
-        
+        [$where, $types, $values] = self::buildWhere($filters);
+
         $sql = "SELECT p.*, 
                        c.company_name AS client_company, c.email AS client_email,
                        u.first_name AS creator_first, u.last_name AS creator_last
                 FROM projects p
                 JOIN users c ON p.client_id = c.id
                 JOIN users u ON p.created_by_id = u.id
-                WHERE 1=1";
-        
-        $types = "";
-        $values = [];
+                $where
+                ORDER BY p.created_at DESC";
 
-        if (isset($filters['status'])) {
-            $sql .= " AND p.status = ?";
-            $types .= "s";
-            $values[] = $filters['status'];
+        if (isset($filters['limit']) && (int)$filters['limit'] > 0) {
+            $sql .= " LIMIT ?";
+            $types .= "i";
+            $values[] = (int)$filters['limit'];
+            if (isset($filters['offset']) && (int)$filters['offset'] > 0) {
+                $sql .= " OFFSET ?";
+                $types .= "i";
+                $values[] = (int)$filters['offset'];
+            }
         }
-        if (isset($filters['client_id'])) {
-            $sql .= " AND p.client_id = ?";
-            $types .= "s";
-            $values[] = $filters['client_id'];
-        }
-        if (isset($filters['created_by_id'])) {
-            $sql .= " AND p.created_by_id = ?";
-            $types .= "s";
-            $values[] = $filters['created_by_id'];
-        }
-
-        $sql .= " ORDER BY p.created_at DESC";
 
         if (empty($values)) {
             $res = $db->query($sql);
@@ -111,5 +103,50 @@ class Project {
         $stmt->bind_param($types, ...$values);
         $stmt->execute();
         return $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+    }
+
+    public static function countAll(array $filters = []): int {
+        $db = Database::getInstance();
+        [$where, $types, $values] = self::buildWhere($filters);
+
+        $sql = "SELECT COUNT(*) AS c
+                FROM projects p
+                JOIN users c ON p.client_id = c.id
+                JOIN users u ON p.created_by_id = u.id
+                $where";
+
+        if (empty($values)) {
+            $res = $db->query($sql);
+            return $res ? (int)$res->fetch_assoc()['c'] : 0;
+        }
+
+        $stmt = $db->prepare($sql);
+        $stmt->bind_param($types, ...$values);
+        $stmt->execute();
+        return (int)$stmt->get_result()->fetch_assoc()['c'];
+    }
+
+    private static function buildWhere(array $filters): array {
+        $where = "WHERE 1=1";
+        $types = "";
+        $values = [];
+
+        if (isset($filters['status']) && $filters['status'] !== '') {
+            $where .= " AND p.status = ?";
+            $types .= "s";
+            $values[] = $filters['status'];
+        }
+        if (isset($filters['client_id']) && $filters['client_id'] !== '') {
+            $where .= " AND p.client_id = ?";
+            $types .= "s";
+            $values[] = $filters['client_id'];
+        }
+        if (isset($filters['created_by_id']) && $filters['created_by_id'] !== '') {
+            $where .= " AND p.created_by_id = ?";
+            $types .= "s";
+            $values[] = $filters['created_by_id'];
+        }
+
+        return [$where, $types, $values];
     }
 }

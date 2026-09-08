@@ -45,6 +45,7 @@ ob_start();
             </div>
         <?php endforeach; ?>
     </div>
+    <?php include dirname(__DIR__) . '/partials/pagination.php'; ?>
 <?php endif; ?>
 
 <?php

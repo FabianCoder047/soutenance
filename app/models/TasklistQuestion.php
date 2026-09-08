@@ -108,6 +108,34 @@ class TasklistQuestion {
         return (int)$stmt->get_result()->fetch_assoc()['c'];
     }
 
+    public static function countUnanswered(string $tasklistId): int {
+        $db = Database::getInstance();
+        $stmt = $db->prepare(
+            "SELECT COUNT(*) AS c
+             FROM tasklist_questions q
+             WHERE q.tasklist_id = ?
+               AND NOT EXISTS (
+                   SELECT 1
+                   FROM tasklist_answers a
+                   WHERE a.question_id = q.id
+                     AND a.tasklist_id = q.tasklist_id
+                     AND (
+                         (q.type = 'LONG_TEXT' AND a.text_value IS NOT NULL AND TRIM(a.text_value) <> '')
+                         OR (q.type IN ('SINGLE_CHOICE', 'MULTIPLE_CHOICE') AND EXISTS (
+                             SELECT 1
+                             FROM tasklist_answer_options ao
+                             JOIN tasklist_question_options o ON o.id = ao.option_id
+                             WHERE ao.answer_id = a.id AND o.question_id = q.id))
+                         OR (q.type = 'FILE_UPLOAD' AND EXISTS (
+                             SELECT 1 FROM tasklist_answer_files f WHERE f.answer_id = a.id))
+                     )
+               )"
+        );
+        $stmt->bind_param('s', $tasklistId);
+        $stmt->execute();
+        return (int)$stmt->get_result()->fetch_assoc()['c'];
+    }
+
     public static function getAnswersForTasklist(string $tasklistId): array {
         $db = Database::getInstance();
         $stmt = $db->prepare(
@@ -180,7 +208,7 @@ class TasklistQuestion {
         foreach ($questions as $question) {
             $questionId = $question['id'];
             $type = $question['type'];
-            $required = (int)$question['required'] === 1;
+            $required = true;
             $value = $postAnswers[$questionId] ?? null;
 
             if ($type === 'MULTIPLE_CHOICE' && !is_array($value)) {

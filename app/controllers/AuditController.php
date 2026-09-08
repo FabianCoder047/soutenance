@@ -20,8 +20,25 @@ class AuditController {
             'date_to' => $_GET['date_to'] ?? '',
         ];
 
+        $perPageOptions = [10, 25, 50, 100];
+        $perPage = (int)($_GET['per_page'] ?? 25);
+        if (!in_array($perPage, $perPageOptions, true)) {
+            $perPage = 25;
+        }
+
+        $page = max(1, (int)($_GET['page'] ?? 1));
+        $total = AuditLog::countAll($filters);
+        $totalPages = max(1, (int)ceil($total / $perPage));
+        if ($page > $totalPages) {
+            $page = $totalPages;
+        }
+        $offset = ($page - 1) * $perPage;
+
+        $filters['limit'] = $perPage;
+        $filters['offset'] = $offset;
+
         $logs = AuditLog::getAll($filters);
-        
+
         // Fetch all users to populate the filter dropdown
         $users = User::getAll();
 

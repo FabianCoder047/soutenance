@@ -146,6 +146,7 @@ ob_start();
             </tbody>
         </table>
     </div>
+    <?php include dirname(__DIR__) . '/partials/pagination.php'; ?>
 </div>
 
 <!-- Invitation Modal -->

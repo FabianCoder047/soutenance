@@ -4,6 +4,22 @@ declare(strict_types=1);
 require_once __DIR__ . '/SmtpMailer.php';
 
 class Email {
+    public static function notification(string $to, string $subject, string $message): bool {
+        $message = htmlspecialchars($message, ENT_QUOTES, 'UTF-8');
+        $body = "
+            <h2>e-Media Support</h2>
+            <p>Bonjour,</p>
+            <p>{$message}</p>
+            <p>
+                Pour plus de détails, connectez-vous à votre espace sur e-Media Support.
+            </p>
+            <p>Cordialement,<br>L'équipe e-Media Support</p>
+            <hr style=\"border: none; border-top: 1px solid #eee; margin: 24px 0;\">
+            <p style=\"color: #777; font-size: 12px;\">Ceci est un email automatique de notification. Merci de ne pas y répondre.</p>
+        ";
+        return self::send($to, $subject, $body);
+    }
+
     public static function send(string $to, string $subject, string $body): bool {
         $mailConfig = include dirname(__DIR__, 2) . '/config/mail.php';
         $appConfig = include dirname(__DIR__, 2) . '/config/app.php';

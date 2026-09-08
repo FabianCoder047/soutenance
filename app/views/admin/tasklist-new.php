@@ -132,6 +132,12 @@ ob_start();
                 <i class="bi bi-plus-lg me-1"></i> Ajouter une option
             </button>
         </div>
+
+        <div class="text-end mt-3">
+            <button type="button" class="btn btn-sm btn-outline-primary rounded-pill px-3 add-question-bottom-btn d-none">
+                <i class="bi bi-plus-lg me-1"></i> Ajouter une question
+            </button>
+        </div>
     </div>
 </template>
 
@@ -145,8 +151,10 @@ document.addEventListener('DOMContentLoaded', function() {
     let questionIndex = 0;
 
     function refreshQuestionNumbers() {
-        container.querySelectorAll('.question-card').forEach(function(card, index) {
+        const cards = container.querySelectorAll('.question-card');
+        cards.forEach(function(card, index) {
             card.querySelector('.question-number').textContent = String(index + 1);
+            card.querySelector('.add-question-bottom-btn').classList.toggle('d-none', index !== cards.length - 1);
         });
     }
 
@@ -189,6 +197,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
         card.querySelector('.add-option-btn').addEventListener('click', function() {
             card.querySelector('.options-list').appendChild(createOptionRow(''));
+        });
+
+        card.querySelector('.add-question-bottom-btn').addEventListener('click', function() {
+            addQuestion();
         });
     }
 
